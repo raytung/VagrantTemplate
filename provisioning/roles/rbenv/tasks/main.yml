@@ -1,0 +1,72 @@
+---
+- name: Get current Ruby version
+  command: /home/vagrant/.rbenv/shims/ruby -v
+  register: result
+  ignore_errors: True
+
+- name: Install Build essential
+  sudo: yes
+  apt: name={{ item }} force=yes state=latest update_cache=yes
+  with_items:
+    - make
+    - gcc
+    - build-essential
+    - curl
+    - openssl
+    - libssl-dev
+    - libyaml-dev
+    - git
+    - libreadline-dev
+  when: result.rc !=0 or result.stdout.split()[1] != "2.2.3p173"
+
+- name: Check rbenv
+  stat: path=~/.rbenv
+  register: rbenv
+
+- name: Clone rbenv
+  git:
+    repo: https://github.com/rbenv/rbenv.git
+    dest: ~/.rbenv
+  when: rbenv.stat.exists == False
+
+- name: Make rbenv
+  shell: cd ~/.rbenv && src/configure && make -C src
+  when: rbenv.stat.exists == False
+
+- name: Clone ruby-build
+  git:
+    repo: https://github.com/rbenv/ruby-build.git
+    dest: ~/.rbenv/plugins/ruby-build
+  when: rbenv.stat.exists == False
+
+- name : Setup rbenv in path
+  lineinfile:
+    dest: /home/vagrant/.bashrc
+    line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
+
+- name : Setup rbenv init
+  lineinfile:
+    dest: /home/vagrant/.bashrc
+    line: 'eval "$(rbenv init -)"'
+
+- name: Install Ruby 2.2.3
+  shell: rbenv install 2.2.3
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/home/vagrant/.rbenv/bin"
+  when: result.rc !=0 or result.stdout.split()[1] != "2.2.3p173"
+
+- name: Use Ruby 2.2.3
+  shell: rbenv global 2.2.3
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/home/vagrant/.rbenv/bin"
+  when: result.rc !=0 or result.stdout.split()[1] != "2.2.3p173"
+
+- name: Install Bundler
+  shell: bash -ilc "gem install bundler"
+  when: result.rc !=0 or result.stdout.split()[1] != "2.2.3p173"
+
+- name: Bundle Install
+  bundler:
+    state: latest
+    chdir: /vagrant/
+    executable: ~/.rbenv/shims/bundle

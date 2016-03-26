@@ -1,0 +1,25 @@
+---
+- name: Get current Elixir version
+  command: elixir -v
+  register: result
+  ignore_errors: True
+
+- name: Download Erlang solutions repo
+  get_url: url=https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb dest=/tmp/erlang.deb
+  when: result.rc !=0
+
+- name: Add Erlang solutions repo
+  shell: dpkg -i /tmp/erlang.deb
+  sudo: yes
+  when: result.rc !=0
+
+- name: Install Elixir
+  sudo: yes
+  apt: name={{ item }} state=latest update_cache=yes
+  with_items:
+    - esl-erlang
+    - elixir
+  when: result.rc !=0
+
+- name: Get project dependencies
+  shell: cd /vagrant/ && mix local.hex --force && mix deps.get

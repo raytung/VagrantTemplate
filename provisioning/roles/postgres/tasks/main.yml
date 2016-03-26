@@ -1,0 +1,12 @@
+---
+- name: Install Postgres
+  sudo: yes
+  apt: name={{ item }} state=latest update_cache=yes
+  with_items:
+    - postgresql
+    - postgresql-contrib
+
+- name: Start Postgres
+  service: name=postgresql state=started
+  become: yes
+  become_user: root
