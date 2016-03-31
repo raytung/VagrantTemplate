@@ -5,6 +5,15 @@ copy-and-paste to a new project
 
 #### Currently supports
 
+##### Languages
+
 - Ruby
 - Elixir
+
+##### Databases
+
 - Postgres
+
+##### Caching/In-memory Datastore
+
+- Redis

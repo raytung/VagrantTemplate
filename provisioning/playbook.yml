@@ -5,3 +5,4 @@
     - rbenv
     - elixir
     - postgres
+    - redis

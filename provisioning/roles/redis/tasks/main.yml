@@ -1,0 +1,36 @@
+---
+- name: Get current redis version
+  command: redis-cli -v
+  register: result
+  ignore_errors: True
+
+- name: Install TCL
+  sudo: yes
+  apt: name=tcl8.5 state=latest update_cache=yes
+  when: result.rc !=0
+
+- name: Create tmp dir
+  shell: mkdir -p ~/tmp
+  when: result.rc != 0
+
+- name: Download && Unzip Redis
+  unarchive:
+    src: http://download.redis.io/releases/redis-stable.tar.gz
+    dest: /home/vagrant/tmp
+    copy: no
+  when: result.rc !=0
+
+- name: Compile Redis
+  sudo: True
+  shell: cd /home/vagrant/tmp/redis-stable && make && make install
+  when: result.rc !=0
+
+- name: Install Redis
+  sudo: True
+  shell: cd /home/vagrant/tmp/redis-stable/utils && 6379 | ./install_server.sh
+  when: result.rc != 0
+
+- name: Start Redis
+  sudo: True
+  service: name=redis_6379 state=started enabled=yes
+  when: result.rc != 0
