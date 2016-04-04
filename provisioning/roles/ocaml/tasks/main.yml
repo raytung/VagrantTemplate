@@ -1,0 +1,20 @@
+---
+- name: Get current OCaml version
+  command: ocaml -version
+  register: result
+  ignore_errors: True
+
+# https://ocaml.org/docs/install.html#Ubuntu
+- name: Add Anil Madhavapeddy's OCaml PPA
+  sudo: yes
+  apt_repository: repo='ppa:avsm/ppa' update_cache=yes state=present
+  when: result.rc !=0
+
+- name: Install Opam
+  sudo: yes
+  apt: name=opam state=latest update_cache=yes force=yes
+  when: result.rc !=0
+
+- name: Setup Opam
+  shell: eval $(opam config env)
+  when: result.rc !=0

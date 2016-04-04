@@ -1,7 +1,7 @@
 # VagrantTemplates
 
-Aims to provide a list of vagrant (with ansible) templates so I can simply
-copy-and-paste to a new project
+Aims to provide a list of vagrant (with ansible) templates for
+everybody.
 
 #### Currently supports
 
@@ -9,6 +9,7 @@ copy-and-paste to a new project
 
 - Ruby
 - Elixir
+- OCaml
 
 ##### Databases
 
